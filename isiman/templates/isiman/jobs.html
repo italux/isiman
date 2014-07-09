@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% load isimantags %}
+{% block title %} IsiMan | Jobs {% endblock %}
+{% block content %}
+<div class="breadcrumb">
+  <li class="active">IsiMan</li>
+  <li>Jobs</li>
+</div>
+<div class="row">
+  <div class="col-sm-12">
+    <div class="dataTables_wrapper form-inline" role="grid">
+      <table class="table table-condensed table-hover" id="isimandatatables">
+        <thead>
+          <tr>
+            <th>Cluster</th>
+            <th>Status</th>
+            <th>Job</th>
+            <th>Policy</th>
+            <th>Elapsed time</th>
+            <th>Last update</th>
+          </tr>
+        </thead>
+        <tbody>
+            {% for cluster in clusters %}
+            {% for job in cluster.jobs_set.all %}
+            <tr>
+              <td width="15%">{{ cluster.name }}</td>
+              {% ifequal job.state "Running" %}
+              <td class="success" width="15%">{{ job.state }}</td>
+              {% else %}
+              <td class="warning" width="15%">{{ job.state }}</td>
+              {% endifequal %}
+              <td><strong>{{ job.name }}</strong></td>
+              <td>{{ job.policy }}</td>
+              <td>{{ job.running_time }}</td>
+              <td width="12%">{{ job.modified_at|age }}</td>
+            </tr>
+            {% endfor %}
+            {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+<div>
+{% endblock %}

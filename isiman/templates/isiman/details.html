@@ -1,0 +1,618 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+{% load isimantags %}
+{% block title %} IsiMan | {{ cluster.name }} {% endblock %}
+{% block content %}
+<div class="row">
+{% ifequal cluster.status "OK" %}
+  <div class="col-sm-3">
+    <div class="panel panel-success">
+      <div class="panel-heading">
+        {{ cluster.name }}
+        <div class="row">
+          <div class="col-sm-6">
+            <i class="fa fa-check fa-5x"></i>
+          </div>
+          <div class="col-sm-6 text-right">
+            <img src="{% static "isiman/images/isiloncluster.png" %}" width="100%">
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endifequal %}
+  {% ifequal cluster.status "ATTN" %}
+  <div class="col-sm-3">
+    <div class="panel panel-warning">
+      <div class="panel-heading">
+      {{ cluster.name }}
+        <div class="row">
+          <div class="col-sm-6">
+            <i class="fa fa-warning fa-5x"></i>
+          </div>
+          <div class="col-sm-6 text-right">
+            <img src="{% static "isiman/images/isiloncluster.png" %}" width="100%">
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endifequal %}
+  {% ifequal cluster.status "OFFLINE" %}
+  <div class="col-sm-3">
+    <div class="panel panel-danger">
+      <div class="panel-heading">
+      {{ cluster.name }}
+        <div class="row">
+          <div class="col-sm-6">
+            <i class="fa fa-times fa-5x"></i>
+          </div>
+          <div class="col-sm-6 text-right">
+            <img src="{% static "isiman/images/isiloncluster.png" %}" width="100%">
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endifequal %}
+  <div class="col-sm-3">
+  <a href="/clusters/{{ cluster.id }}/nodes">
+    {% with "A"|nodestatuscount:cluster as nodesattn %}
+    {% with "D"|nodestatuscount:cluster as nodesdown %}
+    {% if nodesdown > 0 and nodesattn > 0 %}
+    <div class="panel panel-danger">
+      <div class="panel-heading">
+        <div class="row">
+          <div class="col-sm-6">
+            <p>Nodes status</p>
+            <i class="fa fa-times fa-4x"></i>
+          </div>
+          <div class="col-sm-6 text-right">
+            <p class="announcement-heading">
+            {{ nodesattn|sum:nodesdown }}
+            </p>
+            {% with nodesattn|sum:nodesdown as total %}
+            <p class="announcement-text">{{ cluster.nodes_set.all.count|sub:total }} healthy</p>
+            {% endwith %}
+          </div>
+        </div>
+      </div>
+    </div>
+    {% elif nodesdown > 0 %}
+    <div class="panel panel-danger">
+      <div class="panel-heading">
+        <div class="row">
+          <div class="col-sm-6">
+            <p>Nodes status</p>
+            <i class="fa fa-times fa-4x"></i>
+          </div>
+          <div class="col-sm-6 text-right">
+            <p class="announcement-heading">
+            {{ nodesdown }}
+            </p>
+            {% with nodesattn|sum:nodesdown as total %}
+            <p class="announcement-text">{{ cluster.nodes_set.all.count|sub:total }} healthy</p>
+            {% endwith %}
+          </div>
+        </div>
+      </div>
+    </div>
+    {% elif nodesattn > 0 %}
+    <div class="panel panel-warning">
+      <div class="panel-heading">
+        <div class="row">
+          <div class="col-sm-6">
+            <p>Nodes status</p>
+            <i class="fa fa-warning fa-4x"></i>
+          </div>
+          <div class="col-sm-6 text-right">
+            <p class="announcement-heading">
+            {{ nodesattn }}
+            </p>
+            {% with nodesattn|sum:nodesdown as total %}
+            <p class="announcement-text">{{ cluster.nodes_set.all.count|sub:total }} healthy</p>
+            {% endwith %}
+          </div>
+        </div>
+      </div>
+    </div>
+    {% else %}
+    <div class="panel panel-success">
+      <div class="panel-heading">
+        <div class="row">
+          <div class="col-sm-6">
+            <p>Nodes status</p>
+            <i class="fa fa-check fa-4x"></i>
+          </div>
+          <div class="col-sm-6 text-right">
+            <p class="announcement-heading">
+            {{ nodesattn }}
+            </p>
+            <p class="announcement-text">{{ cluster.nodes_set.all.count }} healthy</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+    {% endwith %}
+    {% endwith %}
+    </a>
+  </div>
+  <div class="col-sm-3">
+    <a href="#{{ cluster.name }}eventsModal" data-toggle="modal">
+    {% with cluster|clusterevent_byseverity:"E" as emergency %}
+    {% with cluster|clusterevent_byseverity:"C" as critical %}
+    {% with cluster|clusterevent_byseverity:"W" as warning %}
+    {% with cluster|clusterevent_byseverity:"I" as information %}
+    {% with critical|sum:emergency as criticalevents %}
+    {% if criticalevents %}
+    <div class="panel panel-danger">
+      <div class="panel-heading">
+        <div class="row">
+          <div class="col-sm-6">
+            <i class="fa fa-warning fa-5x"></i>
+          </div>
+        <div class="col-sm-6 text-right">
+          <p class="announcement-heading">
+            {{ criticalevents }}
+          </p>
+          <p class="announcement-text">Critical events</p>
+        </div>
+        </div>
+      </div>
+    </div>
+    {% elif warning %}
+    <div class="panel panel-warning">
+      <div class="panel-heading">
+        <div class="row">
+          <div class="col-sm-6">
+            <i class="fa fa-warning fa-5x"></i>
+          </div>
+        <div class="col-sm-6 text-right">
+          <p class="announcement-heading">
+            {{ warning }}
+          </p>
+          <p class="announcement-text">Warning events</p>
+        </div>
+        </div>
+      </div>
+    </div>
+    {% elif information %}
+    <div class="panel panel-info">
+      <div class="panel-heading">
+        <div class="row">
+          <div class="col-sm-6">
+            <i class="fa fa-info-circle fa-5x"></i>
+          </div>
+        <div class="col-sm-6 text-right">
+          <p class="announcement-heading">
+            {{ information }}
+          </p>
+          <p class="announcement-text">Info events</p>
+        </div>
+        </div>
+      </div>
+    </div>
+    {% else %}
+    <div class="panel panel-success">
+      <div class="panel-heading">
+        <div class="row">
+          <div class="col-sm-6">
+            <i class="fa fa-check fa-5x"></i>
+          </div>
+        <div class="col-sm-6 text-right">
+          <p class="announcement-heading">
+            0
+          </p>
+          <p class="announcement-text">Cluster events</p>
+        </div>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+    {% endwith %}
+    {% endwith %}
+    {% endwith %}
+    {% endwith %}
+    {% endwith %}
+    </a>
+  </div>
+  <div class="col-sm-3">
+    <a href="#{{ cluster.name }}jobsModal" data-toggle="modal">
+    {% with cluster|clusterjobs_bystate:"Running" as running %}
+    {% with cluster|clusterjobs_bystate:"Waiting" as waiting %}
+    {% with cluster|clusterjobs_bystate:"System Paused" as system %}
+    {% with cluster|clusterjobs_bystate:"Policy Paused" as policy %}
+    {% with cluster|clusterjobs_bystate:"User Paused" as user %}
+    {% with user|sum:system as usersystem %}
+    {% with policy|sum:usersystem as paused %}
+    {% with usersystem|sum:paused as totalpaused %}
+    {% if running %}
+    <div class="panel panel-info">
+      <div class="panel-heading">
+        <div class="row">
+          <div class="col-sm-6">
+            <i class="fa fa-cog fa-5x"></i>
+          </div>
+        <div class="col-sm-6 text-right">
+          <p class="announcement-heading-medium">
+            {{ running }}
+          </p>
+          <p class="announcement-text">Job(s) running</p>
+          <p class="announcement-text">{{ totalpaused|sum:waiting }} waiting</p>
+        </div>
+        </div>
+      </div>
+    </div>
+    {% elif waiting %}
+    <div class="panel panel-warning">
+      <div class="panel-heading">
+        <div class="row">
+          <div class="col-sm-6">
+            <i class="fa fa-pause fa-4x"></i>
+          </div>
+        <div class="col-sm-6 text-right">
+          <p class="announcement-heading-medium">
+            {{ waiting }}
+          </p>
+          <p class="announcement-text">Job(s) waiting</p>
+          <p class="announcement-text">{{ totalpaused }} paused</p>
+        </div>
+        </div>
+      </div>
+    </div>
+    {% elif totalpaused %}
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <div class="row">
+          <div class="col-sm-6">
+            <i class="fa fa-pause fa-4x"></i>
+          </div>
+        <div class="col-sm-6 text-right">
+          <p class="announcement-heading">
+            {{ totalpaused }}
+          </p>
+          <p class="announcement-text">Job(s) paused</p>
+        </div>
+        </div>
+      </div>
+    </div>
+    {% else %}
+    <div class="panel panel-success">
+      <div class="panel-heading">
+        <div class="row">
+          <div class="col-sm-6">
+            <i class="fa fa-check fa-5x"></i>
+          </div>
+        <div class="col-sm-6 text-right">
+          <p class="announcement-heading">
+            0
+          </p>
+          <p class="announcement-text">Jobs Running</p>
+        </div>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+    {% endwith %}
+    {% endwith %}
+    {% endwith %}
+    {% endwith %}
+    {% endwith %}
+    {% endwith %}
+    {% endwith %}
+    {% endwith %}
+    </a>
+  </div>
+</div>
+<div class="row">
+  <div class="col-sm-4">
+    <div class="panel panel-default">
+        <div id="cpugraph" style="height:250px;"></div>
+      </div>
+  </div>
+  <div class="col-sm-8">
+    <div class="panel panel-default">
+      <div id="clientconngraph" style="height:250px;"></div>
+    </div>
+  </div>
+</div>
+<div class="row">
+  <div class="col-sm-6">
+    <div class="panel panel-default">
+      <div id="smartpoolgraph" style="height:250px;"></div>
+    </div>
+  </div>
+  <div class="col-sm-6">
+    <div class="panel panel-default">
+      <div class="panel-heading">
+      <h3 class="panel-title">Jobs Running</h3>
+      </div>
+      <div class="panel-body">
+      <table class="table table-condensed table-hover">
+        <thead>
+          <tr>
+            <th>Job</th>
+            <th>Status</th>
+            <th>Policy</th>
+            <th>Elapsed</th>
+          </tr>
+        </thead>
+        <tbody>
+            {% for job in cluster.jobs_set.all %}
+            {% ifequal job.state "Running" %}
+            <tr>
+              <td><strong>{{ job.name }}</strong></td>
+              <td class="success">{{ job.state }}</td>
+              <td>{{ job.policy }}</td>
+              <td>{{ job.running_time }}</td>
+            </tr>
+            {% endifequal %}
+            {% endfor %}
+        </tbody>
+      </table> 
+      </div>         
+    </div>          
+  </div>
+</div>
+<div class="modal fade bs-example-modal-lg" id="{{ cluster.name }}eventsModal" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <h4 class="modal-title">Cluster Events</h4>
+      </div>
+      <div class="modal-body">
+        <div class="table-responsive">
+         <table class="table table-condensed table-hover">
+           <thead>
+             <tr>
+               <th>ID</th>
+               <th>Node</th>
+               <th>Severity</th>
+               <th>Message</th>
+               <th>Last update</th>
+             </tr>
+           </thead>
+           <tbody>
+               {% for event in cluster.events_set.all %}
+               <tr>
+               <td width="8%">{{ event.event_id }}</td>
+                <td width="5%">{{ event.node_lnn }}</td>
+                 {% ifequal event.severity "E" %}
+                <td class="danger" width="10%"><strong>Emergency</strong></td>
+                 {% endifequal %}
+                 {% ifequal event.severity "C" %}
+                 <td class="danger" width="10%">Critical</td>
+                 {% endifequal %}
+                 {% ifequal event.severity "W" %}
+                 <td class="warning" width="10%">Warning</td>
+                 {% endifequal %}
+                 {% ifequal event.severity "I" %}
+                 <td class="success" width="10%">Information</td>
+                 {% endifequal %}
+                 <td>{{ event.message }}</td>
+                 <td width="15%">{{ event.modified_at|age }}</td>
+               </tr>                    
+               {% endfor %}
+           </tbody>
+         </table>
+      </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+      </div>
+    </div><!-- /.modal-content -->
+  </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+<div class="modal fade bs-example-modal-lg" id="{{ cluster.name }}jobsModal" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <h4 class="modal-title">Jobs List</h4>
+      </div>
+      <div class="modal-body">
+        <div class="table-responsive">
+            <table class="table table-condensed table-hover">
+              <thead>
+                <tr>
+                  <th>Job</th>
+                  <th>Status</th>
+                  <th>Policy</th>
+                  <th>Elapsed</th>
+                  <th>Last update</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for job in cluster.jobs_set.all %}
+                <tr>
+                  <td width="20%"><strong>{{ job.name }}</strong></td>
+                  {% ifequal job.state "Running" %}
+                  <td class="success" width="20%">{{ job.state }}</td>
+                  {% else %}
+                  <td class="warning" width="20%">{{ job.state }}</td>
+                  {% endifequal %}
+                  <td>{{ job.policy }}</td>
+                  <td>{{ job.running_time }}</td>
+                  <td width="15%">{{ job.modified_at|age }}</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+        </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+      </div>
+    </div><!-- /.modal-content -->
+  </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+{% block script %}
+<script type="text/javascript" charset="utf-8">
+function bytes(bytes, label) {
+  if (bytes == 0) return '';
+    var s = ['bytes', 'KB', 'MB', 'GB', 'TB', 'PB'];
+    var e = Math.floor(Math.log(bytes)/Math.log(1024));
+    var value = ((bytes/Math.pow(1024, Math.floor(e))).toFixed(2));
+    e = (e<0) ? (-e) : e;
+  if (label) value += ' ' + s[e];
+    return value;
+};
+$(function () {
+  $('#smartpoolgraph').highcharts({
+    chart: {
+      type: 'column'
+    },
+    title: {
+      text: 'SmartPools'
+    },
+    subtitle: {
+      text: 'Current Capacity Usage'
+    },
+    credits: {
+      enabled: false
+    },
+    xAxis: {
+      categories: [
+        {% for smartpool in cluster.smartpools_set.all %}
+        '{{ smartpool.name }}',
+        {% endfor %}
+      ]
+    },
+    yAxis: {
+      min: 0,
+      title: {
+        text: '% Used Space',
+      },
+    },
+    tooltip: {
+      enabled: true,
+      formatter: function() { return ' ' +
+        this.series.name + ':' + '<br />' + this.y + '% (' + bytes(this.point.percent, true) + ')';
+      }
+    },
+    series: [{
+      name: 'SSD used',
+      color: '#FFAC62',
+      data: [ 
+        {% for smartpool in cluster.smartpools_set.all %}
+        {
+          y: {{ smartpool.ssd_used|percentage:smartpool.ssd_size }},
+          percent: {{ smartpool.ssd_used }},
+        },
+        {% endfor %}
+      ]
+    },
+    {
+      name: 'HDD used',
+      color: '#005D9C',
+      data: [ 
+        {% for smartpool in cluster.smartpools_set.all %}
+        {
+          y: {{ smartpool.hdd_used|percentage:smartpool.hdd_size }},
+          percent: {{ smartpool.hdd_used }},
+        },
+        {% endfor %}
+      ]
+    }]
+  });
+});
+$(function () {
+  $('#clientconngraph').highcharts({
+    chart: {
+      type: 'column'
+    },
+    title: {
+      text: 'Client Connections'
+    },
+    subtitle: {
+      text: 'Current Connections'
+    },
+    credits: {
+      enabled: false
+    },
+    xAxis: {
+      categories: [
+        {% for node in cluster.nodes_set.all %}
+        {{ node.lnn }},
+        {% endfor %}
+      ]
+    },
+    yAxis: {
+      min: 0,
+      title: {
+        text: 'Connection Count'
+      }
+    },
+    tooltip: {
+      enabled: true,
+      formatter: function() {
+        return ' ' + 'Connections: ' + this.y;
+      }
+    },      
+    series: [{
+      name: 'Connections per Node',
+      color: '#005D9C',
+      data: [
+        {% for node in cluster.nodes_set.all %}
+        {{ node.client_conn }},
+        {% endfor %}
+      ]
+    }],
+  });
+});
+$(function() {
+  var chart = new Highcharts.Chart({
+  chart: {
+    renderTo: 'cpugraph',
+      type: 'pie'
+    },
+    title: {
+      text: 'CPU Utilization'
+    },
+    credits: {
+      enabled: false
+    },
+    tooltip: {
+      pointFormat: '<b>{point.percentage:.1f}%</b>'
+    },
+    plotOptions: {
+      pie: {
+        innerSize: '70%',
+        dataLabels: {
+          enabled: false
+        },
+      }
+    },
+    series: [{
+      data: [
+        {
+          name: 'Usage',
+          y: {{ cluster.cpu_usage }},
+          color: '#FFAC62'
+        },
+        {
+          name: 'Idle',
+          y: {{ 100|sub:cluster.cpu_usage }},
+          color: '#59955C'
+        },
+      ]
+    }]
+  },
+                                 
+function(chart) {
+  var xpos = '50%';
+  var ypos = '50%';
+  {% if cluster.cpu_usage < 10 %}
+  chart.renderer.text( '0{{ cluster.cpu_usage }}%' , 146, 151).css({
+  {% else %}
+  chart.renderer.text( '{{ cluster.cpu_usage }}%' , 146, 151).css({
+  {% endif %}
+  color: '#FF9C42',
+  fontSize: '30px',
+}).add();
+});
+});
+</script>
+{% endblock %}
+{% endblock %}

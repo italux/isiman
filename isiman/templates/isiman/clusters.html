@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+{% load isimantags %}
+{% block title %} IsiMan | Clusters {% endblock %}
+{% block content %}
+<div class="row">
+{% for cluster in clusters %}
+{% ifequal cluster.status "OK" %}
+<div class="col-sm-3">
+  <a href="/clusters/{{cluster.id }}">
+    <div class="panel panel-success">
+      <div class="panel-heading">
+        {{ cluster.name }}
+        <div class="row">
+          <div class="col-sm-6">
+            <i class="fa fa-check fa-5x"></i>
+          </div>
+          <div class="col-sm-6 text-right">
+            <img src="{% static "isiman/images/isiloncluster.png" %}" width="100%">
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endifequal %}
+  {% ifequal cluster.status "ATTN" %}
+  <div class="col-sm-3">
+    <a href="/clusters/{{cluster.id }}">
+      <div class="panel panel-warning">
+        <div class="panel-heading">
+        {{ cluster.name }}
+          <div class="row">
+            <div class="col-sm-6">
+              <i class="fa fa-warning fa-5x"></i>
+            </div>
+            <div class="col-sm-6 text-right">
+              <img src="{% static "isiman/images/isiloncluster.png" %}" width="100%">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  {% endifequal %}
+  {% ifequal cluster.status "OFFLINE" %}
+  <div class="col-sm-3">
+    <a href="/clusters/{{cluster.id }}">
+      <div class="panel panel-danger">
+        <div class="panel-heading">
+        {{ cluster.name }}
+          <div class="row">
+            <div class="col-sm-6">
+              <i class="fa fa-times fa-5x"></i>
+            </div>
+            <div class="col-sm-6 text-right">
+              <img src="{% static "isiman/images/isiloncluster.png" %}" width="100%">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  {% endifequal %}
+  {% endfor %}
+</a>
+</div>
+{% endblock %}

@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% load isimantags %}
+{% block title %} IsiMan | Events {% endblock %}
+{% block content %}
+<div class="breadcrumb">
+  <li class="active">IsiMan</li>
+  <li>Events</li>
+</div>
+<div class="row">
+<div class="col-sm-12">
+  <div class="dataTables_wrapper form-inline" role="grid">
+    <table class="table table-condensed table-hover" id="isimandatatables">
+      <thead>
+        <tr>
+          <th>Cluster</th>
+          <th>ID</th>
+          <th>Node</th>
+          <th>Severity</th>              
+          <th>Message</th>
+          <th>Last update</th>
+        </tr>
+      </thead>
+      <tbody>
+          {% for cluster in clusters %}
+          {% for event in cluster.events_set.all %}
+          <tr>
+            <td width="12%">{{ cluster.name }}</td>
+            <td width="5%">{{ event.event_id }}</td>
+            <td width="8%">Node {{ event.node_lnn }}</td>
+            {% ifequal event.severity "E" %}
+            <td class="danger" width="10%"><strong>Emergency</strong></td>
+            {% endifequal %}
+            {% ifequal event.severity "C" %}
+            <td class="danger" width="10%">Critical</td>
+            {% endifequal %}
+            {% ifequal event.severity "W" %}
+            <td class="warning" width="10%">Warning</td>
+            {% endifequal %}
+            {% ifequal event.severity "I" %}
+            <td class="success" width="10%">Information</td>
+            {% endifequal %}
+            <td>{{ event.message }}</td>
+            <td width="12%">{{ event.modified_at|age }}</td>
+          </tr>
+          {% endfor %}
+          {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+</div>
+{% endblock %}

@@ -1,0 +1,68 @@
+{% load staticfiles %}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    {% block head %}
+    <title>{% block title %} IsiMan | Isilon Overview {% endblock %}</title>
+    <link href="{% static "isiman/css/bootstrap.min.css" %}" rel="stylesheet">
+    <link href="{% static "isiman/css/font-awesome.min.css" %}" rel="stylesheet">
+    <link href="{% static "isiman/css/isiman-template.css" %}" rel="stylesheet">
+    <link href="{% static "isiman/css/dataTables.bootstrap.css" %}" rel="stylesheet">
+    <link href="{% static "isiman/css/sb-admin.css" %}" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    {% endblock %}
+  </head>
+  <body>
+    {% block body %}
+    <div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+      <div class="navbar-inner">
+        <div class="container">
+          <div class="navbar-header">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+            </button>
+          <a class="navbar-brand" href="/">IsiMan</a>
+          </div>
+          <div class="collapse navbar-collapse">
+            <ul class="nav navbar-nav">
+              <li><a href="/">Overview</a></li>
+              <li><a href="/clusters/">Clusters</a></li>
+              <li><a href="/events/">Events</a></li>
+              <li><a href="/jobs/">Jobs</a></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="container">
+      {% block header %}{% endblock %}
+      <div class="starter-template">
+      {% block content %}{% endblock %}
+      </div>
+    </div>
+    <script src="{% static "isiman/js/jquery-1.10.2.js" %}"></script>
+    <script src="{% static "isiman/js/bootstrap.min.js" %}"></script>
+    <script src="{% static "isiman/js/sb-admin.js" %}"></script>
+    <script src="{% static "isiman/js/jquery.dataTables.js" %}"></script>
+    <script src="{% static "isiman/js/dataTables.bootstrap.js" %}"></script>
+    <script src="{% static "isiman/js/jquery.metisMenu.js" %}"></script>
+    <script src="http://code.highcharts.com/highcharts.js"></script>
+    <script type="text/javascript" charset="utf-8">
+      $(document).ready(function() {
+      $(".clickablerow").click(function() {
+            window.document.location = $(this).attr("href");
+        });
+      });
+      $(document).ready(function() {
+        $('#isimandatatables').dataTable({
+          "aLengthMenu": [[ 10, 20, 50, -1 ], [ 10, 20, 50, "All" ]]
+        });
+        }
+      );
+    </script>
+    {% block script %}{% endblock %}
+    {% endblock %}
+  </body>
+</html>

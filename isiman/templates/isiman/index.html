@@ -1,0 +1,542 @@
+{% extends "base.html" %}
+{% load isimantags %}
+{% block title %} IsiMan | Overview {% endblock %}
+{% block content %}
+<div class="row">
+  <div class="col-sm-3">
+  <a href="/clusters/">
+    {% with "ATTN"|clusterstatuscount as clustersattn %}
+    {% with "OFFLINE"|clusterstatuscount as clustersdown %}
+    {% if clustersdown > 0 and clustersattn > 0 %}
+    <div class="panel panel-danger">
+      <div class="panel-heading">
+        <div class="row">
+          <div class="col-sm-6">
+            <p>Clusters status</p>
+            <i class="fa fa-times fa-4x"></i>
+          </div>
+          <div class="col-sm-6 text-right">
+            <p class="announcement-heading">
+            {{ clustersattn|sum:clustersdown }}
+            </p>
+            {% with clustersattn|sum:clustersdown as total %}
+            <p class="announcement-text">{{ clusters.count|sub:total }} healthy</p>
+            {% endwith %}
+          </div>
+        </div>
+      </div>
+    </div>
+    {% elif clustersdown > 0 %}
+    <div class="panel panel-danger">
+      <div class="panel-heading">
+        <div class="row">
+          <div class="col-sm-6">
+            <p>Clusters status</p>
+            <i class="fa fa-times fa-4x"></i>
+          </div>
+          <div class="col-sm-6 text-right">
+            <p class="announcement-heading">
+            {{ clustersattn|sum:clustersdown }}
+            </p>
+            {% with clustersattn|sum:clustersdown as total %}
+            <p class="announcement-text">{{ clusters.count|sub:total }} healthy</p>
+            {% endwith %}
+          </div>
+        </div>
+      </div>
+    </div>
+    {% elif clustersattn > 0 %}
+    <div class="panel panel-warning">
+      <div class="panel-heading">
+        <div class="row">
+          <div class="col-sm-6">
+            <p>Clusters status</p>
+            <i class="fa fa-warning fa-4x"></i>
+          </div>
+          <div class="col-sm-6 text-right">
+            <p class="announcement-heading">
+            {{ clustersattn|sum:clustersdown }}
+            </p>
+            {% with clustersattn|sum:clustersdown as total %}
+            <p class="announcement-text">{{ clusters.count|sub:total }} healthy</p>
+            {% endwith %}
+          </div>
+        </div>
+      </div>
+    </div>
+    {% else %}
+    <div class="panel panel-success">
+      <div class="panel-heading">
+        <div class="row">
+          <div class="col-sm-6">
+            <p>Clusters status</p>
+            <i class="fa fa-check fa-4x"></i>
+          </div>
+          <div class="col-sm-6 text-right">
+            <p class="announcement-heading">
+            {{ clustersattn }}
+            </p>
+            <p class="announcement-text">{{ clusters.count }} healthy</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+    {% endwith %}
+    {% endwith %}
+    </a>
+  </div>
+  <div class="col-sm-3">
+    <a href="/events/">
+    {% with "E"|eventseveritycount as emergency %}
+    {% with "C"|eventseveritycount as critical %}
+    {% with "W"|eventseveritycount as warning %}
+    {% with "I"|eventseveritycount as information %}
+    {% with critical|sum:emergency as critevents %}
+    {% if critevents %}
+    <div class="panel panel-danger">
+      <div class="panel-heading">
+        <div class="row">
+          <div class="col-sm-6">
+            <p>Events</p>
+            <i class="fa fa-warning fa-4x"></i>
+          </div>
+        <div class="col-sm-6 text-right">
+          <p class="announcement-heading">
+            {{ critevents }}
+          </p>
+          <p class="announcement-text">Critical events</p>
+        </div>
+        </div>
+      </div>
+    </div>
+    {% elif warning %}
+    <div class="panel panel-warning">
+      <div class="panel-heading">
+        <div class="row">
+          <div class="col-sm-6">
+            <p>Events</p>
+            <i class="fa fa-warning fa-4x"></i>
+          </div>
+        <div class="col-sm-6 text-right">
+          <p class="announcement-heading">
+            {{ warning }}
+          </p>
+          <p class="announcement-text">Warn events</p>
+        </div>
+        </div>
+      </div>
+    </div>
+    {% elif information %}
+    <div class="panel panel-info">
+      <div class="panel-heading">
+        <div class="row">
+          <div class="col-sm-6">
+            <p>Events</p>
+            <i class="fa fa-info-circle fa-4x"></i>
+          </div>
+        <div class="col-sm-6 text-right">
+          <p class="announcement-heading">
+            {{ information }}
+          </p>
+          <p class="announcement-text">Info events</p>
+        </div>
+        </div>
+      </div>
+    </div>
+    {% else %}
+    <div class="panel panel-success">
+      <div class="panel-heading">
+        <div class="row">
+          <div class="col-sm-6">
+            <p>Events</p>
+            <i class="fa fa-check fa-4x"></i>
+          </div>
+        <div class="col-sm-6 text-right">
+          <p class="announcement-heading">
+            0
+          </p>
+          <p class="announcement-text">Events</p>
+        </div>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+    {% endwith %}
+    {% endwith %}
+    {% endwith %}
+    {% endwith %}
+    {% endwith %}
+    </a>
+  </div>
+  <div class="col-sm-3">
+    <a href="/jobs/">
+    {% with "Running"|jobstatecount as jobsrunning %}
+    {% with "Waiting"|jobstatecount as jobswaiting %}
+    {% with "User Paused"|jobstatecount as jobsuser %}
+    {% with "System Paused"|jobstatecount as jobssystem %}
+    {% with "Policy Paused"|jobstatecount as jobspolicy %}
+    {% with jobsuser|sum:jobssystem as jobsusersystem %}
+    {% with jobspolicy|sum:jobsusersystem as jobspaused %}
+    {% with jobsusersystem|sum:jobspaused as totaljobspaused %}
+    {% if jobsrunning %}
+    <div class="panel panel-info">
+      <div class="panel-heading">
+        <div class="row">
+          <div class="col-sm-6">
+            <p>Jobs</p>
+            <i class="fa fa-cog fa-4x"></i>
+          </div>
+          <div class="col-sm-6 text-right">
+            <p class="announcement-heading-medium">
+            {{ jobsrunning }}
+            </p>
+            <p class="announcement-text">Job(s) running</p>
+            <p class="announcement-text">{{ totaljobspaused|sum:jobswaiting }} waiting</p>
+          </div>
+        </div>
+      </div>
+      {% elif jobswaiting %}
+      <div class="panel panel-warning">
+      <div class="panel-heading">
+        <div class="row">
+          <div class="col-sm-6">
+            <p>Jobs</p>
+            <i class="fa fa-pause fa-4x"></i>
+          </div>
+          <div class="col-sm-6 text-right">
+            <p class="announcement-heading-medium">
+            {{ jobswaiting }}
+            </p>
+            <p class="announcement-text">Job(s) waiting</p>
+            <p class="announcement-text">{{ totaljobspaused }} paused</p>
+          </div>
+        </div>
+      </div>
+      {% elif totaljobspaused %}
+      <div class="panel panel-default">
+      <div class="panel-heading">
+        <div class="row">
+          <div class="col-sm-6">
+            <p>Jobs</p>
+            <i class="fa fa-pause fa-4x"></i>
+          </div>
+          <div class="col-sm-6 text-right">
+            <p class="announcement-heading">
+            {{ totaljobspaused }}
+            </p>
+            <p class="announcement-text">Job(s) paused</p>
+          </div>
+        </div>
+      </div>
+      {% else %}
+      <div class="panel panel-success">
+      <div class="panel-heading">
+        <div class="row">
+          <div class="col-sm-6">
+            <p>Jobs</p>
+            <i class="fa fa-check fa-4x"></i>
+          </div>
+          <div class="col-sm-6 text-right">
+            <p class="announcement-heading">
+            0
+            </p>
+            <p class="announcement-text">Running</p>
+          </div>
+        </div>
+      </div>
+      {% endif %}
+      {% endwith %}
+      {% endwith %}
+      {% endwith %}
+      {% endwith %}
+      {% endwith %}
+      {% endwith %}
+      {% endwith %}
+      {% endwith %}
+    </div>
+    </a>
+  </div>
+  <div class="col-sm-3">
+    <a href="#">
+    {% with 1|clustersdelayed as delayed %}
+    {% if delayed %}
+    <div class="panel panel-danger">
+      <div class="panel-heading">
+        <div class="row">
+          <div class="col-sm-6">
+            <p>Database</p>
+            <i class="fa fa-clock-o fa-4x"></i>
+          </div>
+          <div class="col-sm-6 text-right">
+            <p class="announcement-heading-medium">
+            {{ 1|clustersdelayed }}
+            </p>
+            <p class="announcement-text">Delayed</p>
+            <p class="announcement-text">{{ clusters.count|sub:delayed }} updated</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% else %}
+    <div class="panel panel-success">
+      <div class="panel-heading">
+        <div class="row">
+          <div class="col-sm-6">
+            <p>Database</p>
+            <i class="fa fa-clock-o fa-4x"></i>
+          </div>
+          <div class="col-sm-6 text-right">
+            <p class="announcement-heading">
+            {{ 1|clustersdelayed }}
+            </p>
+            <p class="announcement-text">{{ clusters.count|sub:delayed }} updated</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+    {% endwith %}
+    </a>
+  </div>
+</div>
+<div class="row">
+  <div class="col-sm-6">  
+    <div class="panel panel-default">
+      <div id="cpugraph" style="height:250px;"></div>
+    </div>
+  </div>
+  <div class="col-sm-6">
+    <div class="panel panel-default">
+      <div id="clientconngraph" style="height:250px;"></div>
+    </div>
+  </div>
+</div>
+<div class="row">
+  <div class="col-sm-10 col-sm-offset-1">
+    <div class="panel panel-default">
+      <div id="smartpoolgraph" style="height:300px;"></div>
+    </div>
+  </div>
+</div>
+{% block script %}
+<script type="text/javascript" charset="utf-8">
+function bytes(bytes, label) {
+  if (bytes == 0) return '';
+    var s = ['bytes', 'KB', 'MB', 'GB', 'TB', 'PB'];
+    var e = Math.floor(Math.log(bytes)/Math.log(1024));
+    var value = ((bytes/Math.pow(1024, Math.floor(e))).toFixed(2));
+    e = (e<0) ? (-e) : e;
+  if (label) value += ' ' + s[e];
+    return value;
+};
+$(function () {
+  $('#smartpoolgraph').highcharts({
+    chart: {
+      type: 'column'
+    },
+    title: {
+      text: 'SmartPools'
+    },
+    credits: {
+      enabled: false
+    },
+    xAxis: {
+      categories: [
+      {% for cluster in clusters %}
+        '{{ cluster.name }}',
+      {% endfor %}
+      ],
+      labels: {
+        rotation: -25,
+        style: {
+          fontSize: '10px',
+        }
+      },
+    },
+    plotOptions: {
+      series: {
+        cursor: 'pointer',
+        point: {
+          events: {
+            click: function() {
+              location.href = this.options.url;
+            }
+          }
+        }
+      }
+    },
+    yAxis: {
+      min: 0,
+      title: {
+        text: '% Used Space',
+      },
+    },
+    tooltip: {
+      enabled: true,
+      formatter: function() { return ' ' +
+        this.series.name + ':' + '<br />' + this.y + '% (' + bytes(this.point.percent, true) + ')';
+      }
+    },
+    series: [{
+      name: 'SSD used',
+      color: '#FFAC62',
+        data: [
+          {% for cluster in clusters %}
+          {
+          {% with cluster|clusterssdused as ssdused %}
+          {% with cluster|clusterssdsize as ssdsize %}
+            y: {{ ssdused|percentage:ssdsize }},
+            percent: {{ ssdused }},
+            url: '/clusters/{{ cluster.id }}'
+          {% endwith %}
+          {% endwith %}
+          },
+          {% endfor %}
+        ]
+    }, {
+        name: 'HDD used',
+        color: '#005D9C',
+        data: [
+          {% for cluster in clusters %}
+          {
+          {% with cluster|clusterhddused as hddused %}
+          {% with cluster|clusterhddsize as hddsize %}
+            y: {{ hddused|percentage:hddsize }},
+            percent: {{ hddused }},
+            url: '/clusters/{{ cluster.id }}'
+          {% endwith %}
+          {% endwith %}
+          },
+          {% endfor %}
+        ]
+      }]
+    });
+  });
+  $(function () {
+    $('#clientconngraph').highcharts({
+      chart: {
+        type: 'column'
+      },
+      title: {
+        text: 'Client Connections'
+      },
+      credits: {
+        enabled: false
+      },
+      xAxis: {
+        categories: [
+        {% for cluster in clusters %}
+          '{{ cluster.name }}',
+        {% endfor %}              
+        ],
+        labels: {
+          rotation: -25,
+          style: {
+            fontSize: '10px',
+          }
+        },
+      },
+      plotOptions: {
+        series: {
+          cursor: 'pointer',
+          point: {
+            events: {
+              click: function() {
+                location.href = this.options.url;
+              }
+            }
+          }
+        }
+      },
+      yAxis: {
+        min: 0,
+        title: {
+          text: 'Connections',
+        }
+      },
+      tooltip: {
+        enabled: true,
+        formatter: function() {
+          return ' ' + 'Connections: ' + this.y;
+        }
+      },      
+      series: [{
+        name: 'Connections per cluster',
+        color: '#005D9C',
+        data: [
+          {% for cluster in clusters %}
+          {
+            y: {{ cluster|clusterconncount }},
+            url: '/clusters/{{ cluster.id }}'
+          },
+          {% endfor %}
+        ]
+      }]
+    });
+  });
+  $(function () {
+    $('#cpugraph').highcharts({
+      chart: {
+        type: 'column'
+      },
+      title: {
+        text: 'CPU Utilization'
+      },
+      credits: {
+        enabled: false
+      },
+      xAxis: {
+        categories: [
+        {% for cluster in clusters %}
+          '{{ cluster.name }}',
+        {% endfor %}              
+        ],
+        labels: {
+          rotation: -25,
+          style: {
+            fontSize: '10px',
+          }
+        },
+      },
+      plotOptions: {
+        series: {
+          color: '#FFAC62',
+          cursor: 'pointer',
+          point: {
+            events: {
+              click: function() {
+                location.href = this.options.url;
+              }
+            }
+          }
+        }
+      },
+      yAxis: {
+        min: 0,
+        title: {
+          text: '% Usage',
+        }
+      },
+      tooltip: {
+        enabled: true,
+        formatter: function() {
+          return ' ' + 'CPU: ' + this.y + '%';
+        }
+      },    
+      series: [{
+        name: 'CPU Usage per cluster',
+        data: [
+          {% for cluster in clusters %}
+          {
+            y: {{ cluster.cpu_usage }},
+             url: '/clusters/{{ cluster.id }}'
+          },
+          {% endfor %}
+        ]
+      }]
+    });
+  });
+</script>
+{% endblock %}
+{% endblock %}
