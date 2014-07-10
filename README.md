@@ -3,9 +3,11 @@ isiman
 
 Centralized dashboard to manage multiple EMC Isilon clusters
 
+*NOTE:* Tested only on OneFS v7.0
+
 ### Changelog
 
-- v0.1: Allow aggregate and view multiple clusters in a single screen
+- v0.1: Allow aggregate and view multiple clusters in a single screen.
 
 ### More information
 
