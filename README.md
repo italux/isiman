@@ -3,7 +3,7 @@ isiman
 
 Centralized dashboard to manage multiple EMC Isilon clusters
 
-*NOTE:* Tested only on OneFS v7.0
+**NOTE:** Support only on OneFS v7.0
 
 ### Changelog
 
