@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+{% load isimantags %}
+{% block title %} IsiMan | Login {% endblock %}
+{% block content %}
+  <form action="/login/" method="post" class="form-signin" role="form">
+    <div class="page-header">
+      <h1><small>Sign in to IsiMan</small></h1>
+    </div>
+    {% csrf_token %}
+    {% if next %}
+    <input type="hidden" name="next" value="{{ next }}" />
+    {% endif %}
+    <input type="text" name="username" value="{{ username }}" class="form-control" placeholder="Username" required autofocus />
+    <input type="password" name="password" value="" class="form-control" placeholder="Password" required />
+    <button class="btn btn-lg btn-success btn-block" type="submit">Login</button>
+  </form>
+{% endblock %}
