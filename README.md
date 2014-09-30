@@ -8,10 +8,10 @@ Centralized dashboard to manage multiple EMC Isilon clusters
 ### Changelog
 
 - v0.1: Allow aggregate and view multiple clusters in a single screen.
-- v0.2: New dashboard layout information
-		Add support to OneFS 7.1
-		Add snapshots information
-		New database schema
+- v0.2: New dashboard layout information<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Add support to OneFS 7.1<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Add snapshots information<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;New database schema
 
 ### More information
 
