@@ -1,62 +1,70 @@
 {% extends "base.html" %}
-{% load staticfiles %}
 {% load isimantags %}
-{% block title %} {{ cluster.name }} | Nodes {% endblock %}
+{% block title %} IsiMan | Nodes {% endblock %}
 {% block content %}
-<div class="row">
-{% for node in cluster.nodes_set.all %}
-{% ifequal node.status "OK" %}
-<div class="col-sm-3">
-    <div class="panel panel-success">
-      <div class="panel-heading">
-        {{ node.name }}
-        <div class="row">
-          <div class="col-sm-6">
-            <i class="fa fa-check fa-5x"></i>
-          </div>
-          <div class="col-sm-6 text-right">
-            <img src="{% static "isiman/images/isiloncluster.png" %}" width="100%">
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-  {% endifequal %}
-  {% if "A" in node.status %}
-  <div class="col-sm-3">
-      <div class="panel panel-warning">
-        <div class="panel-heading">
-        {{ node.name }}
-          <div class="row">
-            <div class="col-sm-6">
-              <i class="fa fa-warning fa-5x"></i>
-            </div>
-            <div class="col-sm-6 text-right">
-              <img src="{% static "isiman/images/isiloncluster.png" %}" width="100%">
-            </div>
-          </div>
-        </div>
-      </div>
-  </div>
-  {% endif %}
-  {% if "D" in node.status %}
-  <div class="col-sm-3">
-      <div class="panel panel-danger">
-        <div class="panel-heading">
-        {{ node.name }}
-          <div class="row">
-            <div class="col-sm-6">
-              <i class="fa fa-times fa-5x"></i>
-            </div>
-            <div class="col-sm-6 text-right">
-              <img src="{% static "isiman/images/isiloncluster.png" %}" width="100%">
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  {% endif %}
-  {% endfor %}
+<div class="breadcrumb">
+  <li class="active"><a href="/clusters/{{ cluster.name|lower }}">{{ cluster.name }}</a></li>
+  <li>Nodes</li>
 </div>
-<a class="btn btn-default" href="/clusters/{{ cluster.id }}">Voltar</a>
+<div class="row">
+<div class="col-sm-12">
+  <div class="dataTables_wrapper form-inline" role="grid">
+    <table class="table table-condensed table-hover" id="nodesdatatables">
+      <thead>
+        <tr>
+          <th>Node</th>
+          <th>IP Address</th>
+          <th>LNN</th>
+          <th>Status</th>
+          <th>Model</th>
+          <th>Serial Number</th>
+          <th>Service Light</th>
+          <th>Last update</th>
+        </tr>
+      </thead>
+      <tbody>
+          {% for node in cluster.nodes_set.all %}
+          <tr>
+            <td>{{ node.name }}</td>
+            <td>{{ node.ipaddress }}</td>
+            <td>{{ node.lnn }}</td>
+            {% ifequal node.status "OK" %}
+            <td class="success" width="11%" align="center">{{ node.status }}</td>
+            {% endifequal %}
+            {% ifequal node.status "ATTN" %}
+            <td class="warning" align="center">{{ node.status }}</td>
+            {% endifequal %}
+            {% ifequal node.status "DOWN" %}
+            <td class="danger" align="center">{{ node.status }}</td>
+            {% endifequal %}
+            {% ifequal node.status "SMARTFAILED" %}
+            <td class="warning" align="center">{{ node.status }}</td>
+            {% endifequal %}
+            {% ifequal node.status "READ_ONLY" %}
+            <td class="info" align="center">{{ node.status }}</td>
+            {% endifequal %}
+            <td>{{ node.model }}</td>
+            <td>{{ node.serial }}</td>
+            <td><u><a href="#">Turn On</a></u> | <u><a href="#">Turn Off</a></u></td>
+            <td>{{ node.modified_at|age }}</td>
+          </tr>
+          {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+</div>
+<a class="btn btn-default" href="/clusters/{{ cluster.name }}">Voltar</a>
+{% block script %}
+<script type="text/javascript" charset="utf-8">
+$(document).ready(function() {
+  $('#nodesdatatables').dataTable({
+    "iDisplayLength": 20,
+    "aLengthMenu": [[ 10, 20, 50, -1 ], [ 10, 20, 50, "All" ]],
+    "aaSorting": [[ 2, "asc" ]]
+    });
+  }
+);
+</script>
+{% endblock %}
 {% endblock %}

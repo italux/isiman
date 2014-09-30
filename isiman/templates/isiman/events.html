@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load staticfiles %}
 {% load isimantags %}
 {% block title %} IsiMan | Events {% endblock %}
 {% block content %}
@@ -9,14 +10,16 @@
 <div class="row">
 <div class="col-sm-12">
   <div class="dataTables_wrapper form-inline" role="grid">
-    <table class="table table-condensed table-hover" id="isimandatatables">
+    <table class="table table-condensed table-hover" id="eventsdatatables">
       <thead>
         <tr>
           <th>Cluster</th>
-          <th>ID</th>
-          <th>Node</th>
-          <th>Severity</th>              
+          <th>Sev</th>
+          <th >ID</th>
+          <th>Start Time</th>
           <th>Message</th>
+          <th>Node</th>
+          <th></th>
           <th>Last update</th>
         </tr>
       </thead>
@@ -25,22 +28,34 @@
           {% for event in cluster.events_set.all %}
           <tr>
             <td width="12%">{{ cluster.name }}</td>
-            <td width="5%">{{ event.event_id }}</td>
-            <td width="8%">Node {{ event.node_lnn }}</td>
             {% ifequal event.severity "E" %}
-            <td class="danger" width="10%"><strong>Emergency</strong></td>
+            <td class="danger" width="3%" align="center"><img src="{% static "isiman/images/Emergency.gif" %}"></td>
             {% endifequal %}
             {% ifequal event.severity "C" %}
-            <td class="danger" width="10%">Critical</td>
+            <td class="danger" width="3%" align="center"><img src="{% static "isiman/images/Critical.gif" %}"></td>
             {% endifequal %}
             {% ifequal event.severity "W" %}
-            <td class="warning" width="10%">Warning</td>
+            <td class="warning" width="3%" align="center"><img src="{% static "isiman/images/Warning.gif" %}"></td>
             {% endifequal %}
             {% ifequal event.severity "I" %}
-            <td class="success" width="10%">Information</td>
+            <td class="success" width="3%" align="center"><img src="{% static "isiman/images/Information.gif" %}"></td>
             {% endifequal %}
+            <td width="5%">{{ event.event_id }}</td>
+            <td width="11%">{{ event.start_time|date:"d/m H:i:s" }}</td>
             <td>{{ event.message }}</td>
-            <td width="12%">{{ event.modified_at|age }}</td>
+            <td width="7%">Node {{ event.node_lnn }}</td>
+            <td width="5%">
+              <div class="btn-group">
+                <button class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown" disabled="true">
+                  <span class="glyphicon glyphicon-cog"></span>
+                </button>
+                <ul class="dropdown-menu" role="menu">
+                  <li><a href="#">Quiet</a></li>
+                  <li><a href="#">Cancel</a></li>
+                </ul>
+              </div>
+            </td>
+            <td width="10%">{{ event.modified_at|age }}</td>
           </tr>
           {% endfor %}
           {% endfor %}
@@ -49,4 +64,18 @@
   </div>
 </div>
 </div>
+{% block script %}
+<script type="text/javascript" charset="utf-8">
+$(document).ready(function() {
+  $('#eventsdatatables').dataTable({
+    "aLengthMenu": [[ 10, 20, 50, -1 ], [ 10, 20, 50, "All" ]],
+    "order": [[ 3, "desc" ]],
+    "columnDefs": [
+       { type: 'alt-string', targets: 1 }
+     ]
+  });
+  }
+);
+</script>
+{% endblock %}
 {% endblock %}

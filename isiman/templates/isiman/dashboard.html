@@ -74,9 +74,9 @@
           </div>
           <div class="col-sm-6 text-right">
             <p class="announcement-heading">
-            {{ clustersattn }}
+            {{ clusters.count }}
             </p>
-            <p class="announcement-text">{{ clusters.count }} healthy</p>
+            <p class="announcement-text">Healthy</p>
           </div>
         </div>
       </div>
@@ -177,8 +177,8 @@
     {% with "System Paused"|jobstatecount as jobssystem %}
     {% with "Policy Paused"|jobstatecount as jobspolicy %}
     {% with jobsuser|sum:jobssystem as jobsusersystem %}
-    {% with jobspolicy|sum:jobsusersystem as jobspaused %}
-    {% with jobsusersystem|sum:jobspaused as totaljobspaused %}
+    {% with jobspolicy|sum:jobswaiting as jobspolicywaiting %}
+    {% with jobsusersystem|sum:jobspolicywaiting as totaljobspaused %}
     {% if jobsrunning %}
     <div class="panel panel-info">
       <div class="panel-heading">
@@ -192,7 +192,7 @@
             {{ jobsrunning }}
             </p>
             <p class="announcement-text">Job(s) running</p>
-            <p class="announcement-text">{{ totaljobspaused|sum:jobswaiting }} waiting</p>
+            <p class="announcement-text">{{ totaljobspaused }} waiting</p>
           </div>
         </div>
       </div>
@@ -265,14 +265,14 @@
       <div class="panel-heading">
         <div class="row">
           <div class="col-sm-6">
-            <p>Database</p>
+            <p>Delayed</p>
             <i class="fa fa-clock-o fa-4x"></i>
           </div>
           <div class="col-sm-6 text-right">
-            <p class="announcement-heading-medium">
+            <p class="announcement-heading">
             {{ 1|clustersdelayed }}
             </p>
-            <p class="announcement-text">Delayed</p>
+            <!-- <p class="announcement-text">Delayed</p> -->
             <p class="announcement-text">{{ clusters.count|sub:delayed }} updated</p>
           </div>
         </div>
@@ -283,7 +283,7 @@
       <div class="panel-heading">
         <div class="row">
           <div class="col-sm-6">
-            <p>Database</p>
+            <p>Delayed</p>
             <i class="fa fa-clock-o fa-4x"></i>
           </div>
           <div class="col-sm-6 text-right">
@@ -301,21 +301,97 @@
   </div>
 </div>
 <div class="row">
-  <div class="col-sm-6">  
+  <div class="col-sm-4">
     <div class="panel panel-default">
-      <div id="cpugraph" style="height:250px;"></div>
+      <div id="totalspacegraph" style="height:300px;"></div>
     </div>
   </div>
-  <div class="col-sm-6">
+  <div class="col-sm-8">
     <div class="panel panel-default">
-      <div id="clientconngraph" style="height:250px;"></div>
+      <div id="smartpoolgraph" style="height:300px;"></div>
     </div>
   </div>
 </div>
 <div class="row">
-  <div class="col-sm-10 col-sm-offset-1">
+  <div class="col-sm-4">
     <div class="panel panel-default">
-      <div id="smartpoolgraph" style="height:300px;"></div>
+      <div class="panel-heading">
+        <h3 class="panel-title">Clusters Summary</h3>
+      </div>
+      <table class="table table-condensed table-hover">
+        <tr>
+          <th>Cluster</th>
+          <th>Version</th>
+          <th>Nodes</th>
+          <th>Status</th>
+        </tr>
+        <tbody>
+          {% for cluster in clusters %}
+          {% if cluster.status == "ATTN" %}
+          <tr class="warning" style="cursor: pointer;" onclick="document.location = '/clusters/{{ cluster.name|lower }}';">
+            <td><strong>{{ cluster.name }}</strong></td>
+            <td>{{ cluster.version }}</td>
+            <td>{{ cluster.nodes_set.count }}</td>
+            <td>{{ cluster.status }}</td>
+          </tr>
+          {% elif cluster.status == "OFFLINE" %}
+          <tr class="danger" style="cursor: pointer;" onclick="document.location = '/clusters/{{ cluster.name|lower }}';">
+            <td><strong>{{ cluster.name }}</strong></td>
+            <td>{{ cluster.version }}</td>
+            <td>{{ cluster.nodes_set.count }}</td>
+            <td>{{ cluster.status }}</td>
+          </tr>
+          {% else %}
+          <tr style="cursor: pointer;" onclick="document.location = '/clusters/{{ cluster.name|lower }}';">
+            <td>{{ cluster.name }}</td>
+            <td>{{ cluster.version }}</td>
+            <td>{{ cluster.nodes_set.count }}</td>
+            <td>{{ cluster.status }}</td>
+          </tr>
+          {% endif %}
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div class="col-sm-5">
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title">Nodes by cluster</h3>
+      </div>
+      <table class="table table-condensed table-hover">
+        <tr>
+          <th>Cluster</th>
+          {% for model in models %}
+          <th>{{ model }}</th>
+          {% endfor %}
+        </tr>
+        <tbody>
+          {% for cluster in clusters %}
+          <tr style="cursor: pointer;" onclick="document.location = '/clusters/{{ cluster.name|lower }}/#nodes';">
+            <td>{{ cluster.name }}</td>
+            {% for model in models %}
+            <td>{{ cluster|clusternodes_bymodel:model }}</td>
+            {% endfor %}
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div class="col-sm-3">
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title">Nodes by Model</h3>
+      </div>
+      <ul class="list-group">
+      {% for model in models %}
+        <li class="list-group-item">
+          <span class="badge">{{ model|nodesbymodel }}</span>
+          {{ model }}
+        </li>
+        {% endfor %}
+      </ul>
     </div>
   </div>
 </div>
@@ -331,71 +407,112 @@ function bytes(bytes, label) {
     return value;
 };
 $(function () {
-  $('#smartpoolgraph').highcharts({
-    chart: {
-      type: 'column'
-    },
-    title: {
-      text: 'SmartPools'
-    },
-    credits: {
-      enabled: false
-    },
-    xAxis: {
-      categories: [
-      {% for cluster in clusters %}
-        '{{ cluster.name }}',
-      {% endfor %}
-      ],
-      labels: {
-        rotation: -25,
-        style: {
-          fontSize: '10px',
+  $(document).ready(function () {
+    $('#totalspacegraph').highcharts({
+      chart: {
+        type: 'pie',
+      },
+      credits: {
+        enabled: false
+      },
+      title: {
+        text: 'Total Space'
+      },
+      legend: {
+        align: 'center',
+          labelFormatter: function() {
+            return this.name + ': ' + bytes(this.y, true);
+        },
+      },
+      tooltip: {
+        enabled: true,
+        formatter: function() { return ' ' +
+          this.point.name + ': ' + bytes(this.y, true) + '<br/>(' + this.point.percent + '%)';
         }
       },
-    },
-    plotOptions: {
-      series: {
-        cursor: 'pointer',
-        point: {
-          events: {
-            click: function() {
-              location.href = this.options.url;
+      plotOptions: {
+        pie: {
+          cursor: 'pointer',
+          dataLabels: {
+            enabled: false
+          },
+          showInLegend: true,
+        },
+      },
+      series: [{
+        data: [
+          {
+            name: 'Used',
+            y: {{ smartpools_hdd_used.total }},
+            percent: {{ smartpools_hdd_used.total|percentage:smartpools_hdd_size.total }},
+            color: '#FFAC62',
+            legendIndex: 2
+          },
+          {
+            name: 'Avail',
+            {% with smartpools_hdd_size.total|sub:smartpools_hdd_used.total as smartpools_hdd_avail %}
+            y: {{ smartpools_hdd_size.total|sub:smartpools_hdd_used.total }},
+            percent: {{ smartpools_hdd_avail|percentage:smartpools_hdd_size.total }},
+            color: '#59955C',
+            legendIndex: 1
+            {% endwith %}
+          },
+        ]
+      }]
+    });
+  });
+});
+$(function () {
+  $(document).ready(function () {
+    $('#smartpoolgraph').highcharts({
+      chart: {
+        type: 'column'
+      },
+      title: {
+        text: 'SmartPools'
+      },
+      credits: {
+        enabled: false
+      },
+      xAxis: {
+        categories: [
+        {% for cluster in clusters %}
+          '{{ cluster.name }}',
+        {% endfor %}
+        ],
+        labels: {
+          rotation: -25,
+          style: {
+            fontSize: '10px',
+          }
+        },
+      },
+      plotOptions: {
+        series: {
+          cursor: 'pointer',
+          point: {
+            events: {
+              click: function() {
+                location.href = this.options.url.toLowerCase();
+              }
             }
           }
         }
-      }
-    },
-    yAxis: {
-      min: 0,
-      title: {
-        text: '% Used Space',
       },
-    },
-    tooltip: {
-      enabled: true,
-      formatter: function() { return ' ' +
-        this.series.name + ':' + '<br />' + this.y + '% (' + bytes(this.point.percent, true) + ')';
-      }
-    },
-    series: [{
-      name: 'SSD used',
-      color: '#FFAC62',
-        data: [
-          {% for cluster in clusters %}
-          {
-          {% with cluster|clusterssdused as ssdused %}
-          {% with cluster|clusterssdsize as ssdsize %}
-            y: {{ ssdused|percentage:ssdsize }},
-            percent: {{ ssdused }},
-            url: '/clusters/{{ cluster.id }}'
-          {% endwith %}
-          {% endwith %}
-          },
-          {% endfor %}
-        ]
-    }, {
-        name: 'HDD used',
+      yAxis: {
+        min: 0,
+        title: {
+          text: '% Used Space',
+        },
+      },
+      tooltip: {
+        enabled: true,
+        formatter: function() { return ' ' +
+          '% Used: ' + this.y + '%' + '<br />' + 'Used: ' + bytes(this.point.percent, true) + '<br />' +   '<br />' + 'Size: ' + bytes(this.point.totalsize, true);
+        }
+      },
+      series: [{
+        name: 'HDD',
         color: '#005D9C',
         data: [
           {% for cluster in clusters %}
@@ -404,137 +521,15 @@ $(function () {
           {% with cluster|clusterhddsize as hddsize %}
             y: {{ hddused|percentage:hddsize }},
             percent: {{ hddused }},
-            url: '/clusters/{{ cluster.id }}'
+            totalsize: {{ hddsize }},
+            url: '/clusters/{{ cluster.name }}'
           {% endwith %}
           {% endwith %}
           },
           {% endfor %}
-        ]
-      }]
-    });
-  });
-  $(function () {
-    $('#clientconngraph').highcharts({
-      chart: {
-        type: 'column'
-      },
-      title: {
-        text: 'Client Connections'
-      },
-      credits: {
-        enabled: false
-      },
-      xAxis: {
-        categories: [
-        {% for cluster in clusters %}
-          '{{ cluster.name }}',
-        {% endfor %}              
-        ],
-        labels: {
-          rotation: -25,
-          style: {
-            fontSize: '10px',
-          }
-        },
-      },
-      plotOptions: {
-        series: {
-          cursor: 'pointer',
-          point: {
-            events: {
-              click: function() {
-                location.href = this.options.url;
-              }
-            }
-          }
-        }
-      },
-      yAxis: {
-        min: 0,
-        title: {
-          text: 'Connections',
-        }
-      },
-      tooltip: {
-        enabled: true,
-        formatter: function() {
-          return ' ' + 'Connections: ' + this.y;
-        }
-      },      
-      series: [{
-        name: 'Connections per cluster',
-        color: '#005D9C',
-        data: [
-          {% for cluster in clusters %}
-          {
-            y: {{ cluster|clusterconncount }},
-            url: '/clusters/{{ cluster.id }}'
-          },
-          {% endfor %}
-        ]
-      }]
-    });
-  });
-  $(function () {
-    $('#cpugraph').highcharts({
-      chart: {
-        type: 'column'
-      },
-      title: {
-        text: 'CPU Utilization'
-      },
-      credits: {
-        enabled: false
-      },
-      xAxis: {
-        categories: [
-        {% for cluster in clusters %}
-          '{{ cluster.name }}',
-        {% endfor %}              
-        ],
-        labels: {
-          rotation: -25,
-          style: {
-            fontSize: '10px',
-          }
-        },
-      },
-      plotOptions: {
-        series: {
-          color: '#FFAC62',
-          cursor: 'pointer',
-          point: {
-            events: {
-              click: function() {
-                location.href = this.options.url;
-              }
-            }
-          }
-        }
-      },
-      yAxis: {
-        min: 0,
-        title: {
-          text: '% Usage',
-        }
-      },
-      tooltip: {
-        enabled: true,
-        formatter: function() {
-          return ' ' + 'CPU: ' + this.y + '%';
-        }
-      },    
-      series: [{
-        name: 'CPU Usage per cluster',
-        data: [
-          {% for cluster in clusters %}
-          {
-            y: {{ cluster.cpu_usage }},
-             url: '/clusters/{{ cluster.id }}'
-          },
-          {% endfor %}
-        ]
-      }]
+          ]
+        }]
+      });
     });
   });
 </script>
