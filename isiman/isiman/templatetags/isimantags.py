@@ -1,10 +1,38 @@
 from django import template
 from django.utils import timezone
+from django.db.models import Sum
 from django.utils.timesince import timesince
 from datetime import datetime, timedelta
 from isiman.models import *
 
 register = template.Library()
+
+@register.filter
+def snapsize_bydate(cluster, date):
+    day = date.split('/')[0]
+    month = date.split('/')[1]
+    year = date.split('/')[2]
+    result = Snapshots.objects.filter(cluster=cluster, created__year=year, created__month=month, created__day=day).aggregate(Sum('size'))
+    return result.get('size__sum')
+
+@register.filter
+def snapcount_bydate(cluster, date):
+    day = date.split('/')[0]
+    month = date.split('/')[1]
+    year = date.split('/')[2]
+    return Snapshots.objects.filter(cluster=cluster, created__year=year, created__month=month, created__day=day).count()
+
+@register.filter
+def nodesbymodel(model):
+   return Nodes.objects.filter(model=model).count()
+
+@register.filter
+def cluster_nodesbymodel(cluster, model):
+   return Nodes.objects.filter(cluster=cluster, model=model).count()
+
+@register.filter
+def clusternodes_bymodel(cluster, model):
+   return Nodes.objects.filter(cluster=cluster, model=model).count()
 
 @register.filter
 def clusterevent_byseverity(model, severity):
@@ -52,7 +80,7 @@ def clusterssdsize(cluster):
 
 @register.filter
 def clusterstatuscount(status):
-    return Cluster.objects.filter(status=status).count()
+    return Clusters.objects.filter(status=status).count()
 
 @register.filter
 def nodestatuscount(status, cluster):
@@ -67,7 +95,7 @@ def clusterconncount(cluster):
 
 @register.filter    
 def clustersdelayed(time):
-    return Cluster.objects.filter(modified_at__lte=datetime.now()-timedelta(hours=time)).count()
+    return Clusters.objects.filter(modified_at__lte=datetime.now()-timedelta(hours=time)).count()
 
 @register.filter
 def percentage(used, size):
