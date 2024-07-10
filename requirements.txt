@@ -27,4 +27,4 @@ slo-generator==1.5.1
 traitlets==5.0.5
 urllib3==1.26.6
 wcwidth==0.2.5
-zipp==3.4.0
+zipp==3.19.1
